@@ -30,11 +30,7 @@
               <div class="flex justify-between items-center mb-4">
                 <h2 class="card-title">Data {{ selectedMonth }}</h2>
 
-                <select
-                  v-model="selectedMonth"
-                  @change="fetchData"
-                  class="select select-bordered"
-                >
+                <select v-model="selectedMonth" @change="fetchData" class="select select-bordered">
                   <option v-for="bulan in months" :key="bulan" :value="bulan">
                     {{ bulan }}
                   </option>
@@ -154,35 +150,21 @@
                   <label class="label">
                     <span class="label-text">Nama</span>
                   </label>
-                  <input
-                    type="text"
-                    v-model="form.nama"
-                    class="input input-bordered w-full bg-base-200"
-                    readonly
-                  />
+                  <input type="text" v-model="form.nama" class="input input-bordered w-full bg-base-200" readonly />
                 </div>
 
                 <div class="form-control">
                   <label class="label">
                     <span class="label-text">Tanggal</span>
                   </label>
-                  <input
-                    type="date"
-                    v-model="form.tanggal"
-                    class="input input-bordered w-full"
-                    required
-                  />
+                  <input type="date" v-model="form.tanggal" class="input input-bordered w-full" required />
                 </div>
 
                 <div class="form-control">
                   <label class="label">
                     <span class="label-text">Jenis SK</span>
                   </label>
-                  <select
-                    v-model="form.jenisSurat"
-                    class="select select-bordered w-full"
-                    required
-                  >
+                  <select v-model="form.jenisSurat" class="select select-bordered w-full" required>
                     <option value="" disabled>Pilih jenis</option>
                     <option v-for="item in jenisSuratOptions" :key="item" :value="item">
                       {{ item }}
@@ -194,24 +176,11 @@
                   <label class="label">
                     <span class="label-text">Jumlah</span>
                   </label>
-                  <input
-                    type="number"
-                    v-model="form.jumlah"
-                    min="1"
-                    class="input input-bordered w-full"
-                    required
-                  />
+                  <input type="number" v-model="form.jumlah" min="1" class="input input-bordered w-full" required />
                 </div>
 
-                <button
-                  type="submit"
-                  class="btn btn-primary w-full mt-4"
-                  :disabled="isSubmitting"
-                >
-                  <span
-                    v-if="isSubmitting"
-                    class="loading loading-spinner loading-sm"
-                  ></span>
+                <button type="submit" class="btn btn-primary w-full mt-4" :disabled="isSubmitting">
+                  <span v-if="isSubmitting" class="loading loading-spinner loading-sm"></span>
 
                   {{ isSubmitting ? 'Mengirim...' : 'Submit Data' }}
                 </button>
@@ -245,6 +214,23 @@
       </div>
     </dialog>
 
+    <!-- Notifikasi Submit Data -->
+    <div v-if="notification.show" class="fixed inset-0 flex items-center justify-center z-50">
+
+      <div class="alert shadow-xl w-[420px] text-lg p-6" :class="{
+        'alert-success': notification.type === 'success',
+        'alert-error': notification.type === 'error',
+        'alert-info': notification.type === 'info'
+      }">
+
+        <span class="font-semibold text-center w-full">
+          {{ notification.message }}
+        </span>
+
+      </div>
+
+    </div>
+
   </div>
 </template>
 
@@ -253,6 +239,24 @@
 import { ref, onMounted, computed } from 'vue'
 import { useUser } from '~/composables/useUser'
 import { useRouter } from 'vue-router'
+
+const notification = ref({
+  show: false,
+  type: 'success',
+  message: ''
+})
+
+const showNotification = (type: string, message: string) => {
+  notification.value = {
+    show: true,
+    type,
+    message
+  }
+
+  setTimeout(() => {
+    notification.value.show = false
+  }, 3000)
+}
 
 const router = useRouter()
 
@@ -268,17 +272,17 @@ const form = ref({
 })
 
 const months = [
-  "Januari","Februari","Maret","April","Mei","Juni",
-  "Juli","Agustus","September","Oktober","November","Desember"
+  "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+  "Juli", "Agustus", "September", "Oktober", "November", "Desember"
 ]
 
 const selectedMonth = ref("Januari")
 
-const jenisSuratOptions = ref(['SPSO','NPP','NTP'])
+const jenisSuratOptions = ref(['SPSO', 'NPP', 'NTP'])
 
 const isSubmitting = ref(false)
 
-onMounted(()=>{
+onMounted(() => {
   form.value.nama = userNama?.value || ''
   fetchData()
 })
@@ -287,23 +291,23 @@ const fetchData = async () => {
 
   try {
 
-    const data:any = await $fetch('/api/hasil_dinas',{
-      query:{ bulan: selectedMonth.value.toLowerCase() }
+    const data: any = await $fetch('/api/hasil_dinas', {
+      query: { bulan: selectedMonth.value.toLowerCase() }
     })
 
     rows.value = data
 
-  } catch(err){
+  } catch (err) {
 
-    console.error('Gagal mengambil data',err)
+    console.error('Gagal mengambil data', err)
 
   }
 
 }
 
-const totalTerima = computed(()=>{
+const totalTerima = computed(() => {
 
-  return rows.value.reduce((acc:any,item:any)=>{
+  return rows.value.reduce((acc: any, item: any) => {
 
     acc.spso += Number(item.terima?.spso || 0)
     acc.npp += Number(item.terima?.npp || 0)
@@ -312,66 +316,72 @@ const totalTerima = computed(()=>{
 
     return acc
 
-  },{spso:0,npp:0,ntp:0,jumlah:0})
+  }, { spso: 0, npp: 0, ntp: 0, jumlah: 0 })
 
 })
 
-const submitForm = async ()=>{
+const submitForm = async () => {
 
-  if(!form.value.tanggal || !form.value.jenisSurat){
-    alert('Tanggal dan Jenis Surat harus diisi!')
+  if (!form.value.tanggal || !form.value.jenisSurat) {
+    showNotification('error', 'Tanggal dan Jenis Surat harus diisi!')
     return
   }
 
   isSubmitting.value = true
 
-  try{
+  try {
 
-    await $fetch('/api/inputDinas',{
-      method:'POST',
-      body:form.value
+    await $fetch('/api/inputDinas', {
+      method: 'POST',
+      body: form.value
     })
 
-    form.value.jenisSurat=''
-    form.value.jumlah=1
+    // reset form
+    form.value.jenisSurat = ''
+    form.value.jumlah = 1
 
+    // reload tabel
     await fetchData()
 
-  }catch(err){
+    // notif sukses
+    showNotification('success', 'Data berhasil disimpan')
+
+  } catch (err) {
 
     console.error(err)
-    alert('Gagal mengirim data.')
 
-  }finally{
+    showNotification('error', 'Gagal mengirim data')
 
-    isSubmitting.value=false
+  } finally {
+
+    isSubmitting.value = false
 
   }
 
 }
 
-const logout = ()=>{
+const logout = () => {
 
   const nip = useCookie('nip')
   const nama = useCookie('nama')
   const role = useCookie('role')
 
-  nip.value=null
-  nama.value=null
-  role.value=null
+  nip.value = null
+  nama.value = null
+  role.value = null
 
   router.push('/login')
 
 }
 
-const openLogoutModal = ()=>{
+const openLogoutModal = () => {
 
   const modal = document.getElementById('logout_modal') as HTMLDialogElement
   modal?.showModal()
 
 }
 
-const confirmLogout = ()=>{
+const confirmLogout = () => {
 
   const modal = document.getElementById('logout_modal') as HTMLDialogElement
   modal?.close()
