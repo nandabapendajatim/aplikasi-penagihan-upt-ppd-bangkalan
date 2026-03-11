@@ -4,16 +4,49 @@
 
     <!-- Navbar -->
     <div class="navbar bg-base-100 shadow-md px-6">
+
+      <!-- LEFT -->
       <div class="flex-1">
         <span class="text-lg font-semibold">
           Aplikasi Pengembalian Dinas Luar
         </span>
       </div>
+
+      <!-- RIGHT -->
       <div class="flex-none">
-        <button class="btn btn-error btn-sm" @click="openLogoutModal">
-          Logout
-        </button>
+
+        <div class="dropdown dropdown-end">
+
+          <label tabindex="0" class="btn btn-ghost">
+            {{ userNama }}
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-2" fill="none" viewBox="0 0 24 24"
+              stroke="currentColor">
+
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+
+            </svg>
+          </label>
+
+          <ul tabindex="0" class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-48">
+
+            <li>
+              <a>Profil</a>
+            </li>
+
+            <li>
+              <a>Ubah Password</a>
+            </li>
+
+            <li>
+              <a @click="openLogoutModal">Logout</a>
+            </li>
+
+          </ul>
+
+        </div>
+
       </div>
+
     </div>
 
     <!-- Content -->
