@@ -1,251 +1,237 @@
-```vue
 <template>
-  <div class="min-h-screen bg-base-200">
 
-    <!-- Navbar -->
-    <div class="navbar bg-base-100 shadow-md px-6">
+  <div class="p-2">
 
-      <!-- LEFT -->
-      <div class="flex-1">
-        <span class="text-lg font-semibold">
-          Aplikasi Pengembalian Dinas Luar
-        </span>
-      </div>
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
-      <!-- RIGHT -->
-      <div class="flex-none">
+      <!-- ===================== -->
+      <!-- TABEL DATA -->
+      <!-- ===================== -->
+      <div class="lg:col-span-9">
 
-        <div class="dropdown dropdown-end">
+        <div class="card bg-base-100 shadow-xl">
 
-          <label tabindex="0" class="btn btn-ghost">
-            {{ userNama }}
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-2" fill="none" viewBox="0 0 24 24"
-              stroke="currentColor">
+          <div class="card-body">
 
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            <div class="flex justify-between items-center mb-4">
 
-            </svg>
-          </label>
+              <h2 class="card-title">
+                Data {{ selectedMonth }}
+              </h2>
 
-          <ul tabindex="0" class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-48">
+              <select v-model="selectedMonth" @change="fetchData" class="select select-bordered">
 
-            <li>
-              <a>Profil</a>
-            </li>
+                <option v-for="bulan in months" :key="bulan" :value="bulan">
+                  {{ bulan }}
+                </option>
 
-            <li>
-              <a>Ubah Password</a>
-            </li>
+              </select>
 
-            <li>
-              <a @click="openLogoutModal">Logout</a>
-            </li>
+            </div>
 
-          </ul>
+            <div class="overflow-x-auto max-h-[600px] overflow-y-auto">
+
+              <table class="table table-zebra text-center">
+
+                <thead class="sticky top-0 z-10 text-white">
+
+                  <tr>
+
+                    <th rowspan="2" class="bg-base-300 text-base-content">
+                      Tanggal
+                    </th>
+
+                    <th colspan="4" class="bg-success">
+                      SK Terima
+                    </th>
+
+                    <th colspan="4" class="bg-info">
+                      SK Kembali
+                    </th>
+
+                    <th colspan="4" class="bg-error">
+                      Sisa SK
+                    </th>
+
+                  </tr>
+
+                  <tr>
+
+                    <th class="bg-success">SPSO</th>
+                    <th class="bg-success">NPP</th>
+                    <th class="bg-success">NTP</th>
+                    <th class="bg-success">Jumlah</th>
+
+                    <th class="bg-info">SPSO</th>
+                    <th class="bg-info">NPP</th>
+                    <th class="bg-info">NTP</th>
+                    <th class="bg-info">Jumlah</th>
+
+                    <th class="bg-error">SPSO</th>
+                    <th class="bg-error">NPP</th>
+                    <th class="bg-error">NTP</th>
+                    <th class="bg-error">Jumlah</th>
+
+                  </tr>
+
+                </thead>
+
+                <tbody>
+
+                  <tr v-for="(row, index) in rows" :key="index">
+
+                    <td>{{ row.tanggal }}</td>
+
+                    <!-- SK TERIMA -->
+                    <td>{{ row.terima.spso }}</td>
+                    <td>{{ row.terima.npp }}</td>
+                    <td>{{ row.terima.ntp }}</td>
+                    <td>{{ row.terima.jumlah }}</td>
+
+                    <!-- SK KEMBALI -->
+                    <td>{{ row.kembali.spso }}</td>
+                    <td>{{ row.kembali.npp }}</td>
+                    <td>{{ row.kembali.ntp }}</td>
+                    <td>{{ row.kembali.jumlah }}</td>
+
+                    <!-- SISA -->
+                    <td :class="row.sisa.spso < 0 ? 'text-error font-bold' : ''">
+                      {{ row.sisa.spso }}
+                    </td>
+
+                    <td :class="row.sisa.npp < 0 ? 'text-error font-bold' : ''">
+                      {{ row.sisa.npp }}
+                    </td>
+
+                    <td :class="row.sisa.ntp < 0 ? 'text-error font-bold' : ''">
+                      {{ row.sisa.ntp }}
+                    </td>
+
+                    <td :class="row.sisa.jumlah < 0 ? 'text-error font-bold' : ''">
+                      {{ row.sisa.jumlah }}
+                    </td>
+
+                  </tr>
+
+                </tbody>
+
+                <tfoot class="sticky bottom-0 z-10 font-bold bg-base-200">
+
+                  <tr>
+
+                    <td>TOTAL</td>
+
+                    <td>{{ totalTerima.spso }}</td>
+                    <td>{{ totalTerima.npp }}</td>
+                    <td>{{ totalTerima.ntp }}</td>
+                    <td>{{ totalTerima.jumlah }}</td>
+
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+
+                  </tr>
+
+                </tfoot>
+
+              </table>
+
+            </div>
+
+          </div>
 
         </div>
 
       </div>
 
-    </div>
+      <!-- ===================== -->
+      <!-- FORM INPUT -->
+      <!-- ===================== -->
+      <div class="lg:col-span-3">
 
-    <!-- Content -->
-    <div class="p-6">
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div class="card bg-base-100 shadow-xl">
 
-        <!-- ===================== -->
-        <!-- TABEL DATA -->
-        <!-- ===================== -->
-        <div class="lg:col-span-9">
-          <div class="card bg-base-100 shadow-xl">
-            <div class="card-body">
+          <div class="card-body">
 
-              <div class="flex justify-between items-center mb-4">
-                <h2 class="card-title">Data {{ selectedMonth }}</h2>
+            <h2 class="card-title mb-4">
+              Input Data
+            </h2>
 
-                <select v-model="selectedMonth" @change="fetchData" class="select select-bordered">
-                  <option v-for="bulan in months" :key="bulan" :value="bulan">
-                    {{ bulan }}
+            <form @submit.prevent="submitForm" class="space-y-4">
+
+              <div class="form-control">
+
+                <label class="label">
+                  <span class="label-text">Nama</span>
+                </label>
+
+                <input type="text" v-model="form.nama" class="input input-bordered w-full bg-base-200" readonly />
+
+              </div>
+
+              <div class="form-control">
+
+                <label class="label">
+                  <span class="label-text">Tanggal</span>
+                </label>
+
+                <input type="date" v-model="form.tanggal" class="input input-bordered w-full" required />
+
+              </div>
+
+              <div class="form-control">
+
+                <label class="label">
+                  <span class="label-text">Jenis SK</span>
+                </label>
+
+                <select v-model="form.jenisSurat" class="select select-bordered w-full" required>
+
+                  <option value="" disabled>
+                    Pilih jenis
                   </option>
+
+                  <option v-for="item in jenisSuratOptions" :key="item" :value="item">
+                    {{ item }}
+                  </option>
+
                 </select>
+
               </div>
 
-              <div class="overflow-x-auto max-h-[500px] overflow-y-auto">
-                <table class="table table-zebra text-center">
+              <div class="form-control">
 
-                  <thead class="sticky top-0 z-10 text-white">
-                    <tr>
-                      <th rowspan="2" class="bg-base-300 text-base-content">
-                        Tanggal
-                      </th>
-                      <th colspan="4" class="bg-success">SK Terima</th>
-                      <th colspan="4" class="bg-info">SK Kembali</th>
-                      <th colspan="4" class="bg-error">Sisa SK</th>
-                    </tr>
+                <label class="label">
+                  <span class="label-text">Jumlah</span>
+                </label>
 
-                    <tr>
-                      <th class="bg-success">SPSO</th>
-                      <th class="bg-success">NPP</th>
-                      <th class="bg-success">NTP</th>
-                      <th class="bg-success">Jumlah</th>
+                <input type="number" v-model="form.jumlah" min="1" class="input input-bordered w-full" required />
 
-                      <th class="bg-info">SPSO</th>
-                      <th class="bg-info">NPP</th>
-                      <th class="bg-info">NTP</th>
-                      <th class="bg-info">Jumlah</th>
-
-                      <th class="bg-error">SPSO</th>
-                      <th class="bg-error">NPP</th>
-                      <th class="bg-error">NTP</th>
-                      <th class="bg-error">Jumlah</th>
-                    </tr>
-                  </thead>
-
-                  <tbody>
-                    <tr v-for="(row, index) in rows" :key="index">
-
-                      <td>{{ row.tanggal }}</td>
-
-                      <!-- SK TERIMA -->
-                      <td>{{ row.terima.spso }}</td>
-                      <td>{{ row.terima.npp }}</td>
-                      <td>{{ row.terima.ntp }}</td>
-                      <td>{{ row.terima.jumlah }}</td>
-
-                      <!-- SK KEMBALI -->
-                      <td>{{ row.kembali.spso }}</td>
-                      <td>{{ row.kembali.npp }}</td>
-                      <td>{{ row.kembali.ntp }}</td>
-                      <td>{{ row.kembali.jumlah }}</td>
-
-                      <!-- SISA -->
-                      <td :class="row.sisa.spso < 0 ? 'text-error font-bold' : ''">
-                        {{ row.sisa.spso }}
-                      </td>
-
-                      <td :class="row.sisa.npp < 0 ? 'text-error font-bold' : ''">
-                        {{ row.sisa.npp }}
-                      </td>
-
-                      <td :class="row.sisa.ntp < 0 ? 'text-error font-bold' : ''">
-                        {{ row.sisa.ntp }}
-                      </td>
-
-                      <td :class="row.sisa.jumlah < 0 ? 'text-error font-bold' : ''">
-                        {{ row.sisa.jumlah }}
-                      </td>
-
-                    </tr>
-                  </tbody>
-
-                  <tfoot class="sticky bottom-0 z-10 font-bold bg-base-200">
-                    <tr>
-
-                      <td>TOTAL</td>
-
-                      <td>{{ totalTerima.spso }}</td>
-                      <td>{{ totalTerima.npp }}</td>
-                      <td>{{ totalTerima.ntp }}</td>
-                      <td>{{ totalTerima.jumlah }}</td>
-
-                      <td></td>
-                      <td></td>
-                      <td></td>
-                      <td></td>
-
-                      <td></td>
-                      <td></td>
-                      <td></td>
-                      <td></td>
-
-                    </tr>
-                  </tfoot>
-
-                </table>
               </div>
 
-            </div>
+              <button type="submit" class="btn btn-primary w-full mt-4" :disabled="isSubmitting">
+
+                <span v-if="isSubmitting" class="loading loading-spinner loading-sm"></span>
+
+                {{ isSubmitting ? 'Mengirim...' : 'Submit Data' }}
+
+              </button>
+
+            </form>
+
           </div>
-        </div>
 
-        <!-- ===================== -->
-        <!-- FORM INPUT -->
-        <!-- ===================== -->
-        <div class="lg:col-span-3">
-          <div class="card bg-base-100 shadow-xl">
-            <div class="card-body">
-
-              <h2 class="card-title mb-4">Input Data</h2>
-
-              <form @submit.prevent="submitForm" class="space-y-4">
-
-                <div class="form-control">
-                  <label class="label">
-                    <span class="label-text">Nama</span>
-                  </label>
-                  <input type="text" v-model="form.nama" class="input input-bordered w-full bg-base-200" readonly />
-                </div>
-
-                <div class="form-control">
-                  <label class="label">
-                    <span class="label-text">Tanggal</span>
-                  </label>
-                  <input type="date" v-model="form.tanggal" class="input input-bordered w-full" required />
-                </div>
-
-                <div class="form-control">
-                  <label class="label">
-                    <span class="label-text">Jenis SK</span>
-                  </label>
-                  <select v-model="form.jenisSurat" class="select select-bordered w-full" required>
-                    <option value="" disabled>Pilih jenis</option>
-                    <option v-for="item in jenisSuratOptions" :key="item" :value="item">
-                      {{ item }}
-                    </option>
-                  </select>
-                </div>
-
-                <div class="form-control">
-                  <label class="label">
-                    <span class="label-text">Jumlah</span>
-                  </label>
-                  <input type="number" v-model="form.jumlah" min="1" class="input input-bordered w-full" required />
-                </div>
-
-                <button type="submit" class="btn btn-primary w-full mt-4" :disabled="isSubmitting">
-                  <span v-if="isSubmitting" class="loading loading-spinner loading-sm"></span>
-
-                  {{ isSubmitting ? 'Mengirim...' : 'Submit Data' }}
-                </button>
-
-              </form>
-
-            </div>
-          </div>
         </div>
 
       </div>
+
     </div>
-
-    <!-- MODAL LOGOUT -->
-    <dialog id="logout_modal" class="modal">
-      <div class="modal-box">
-        <h3 class="font-bold text-lg">Konfirmasi Logout</h3>
-        <p class="py-4">Apakah Anda yakin ingin keluar?</p>
-
-        <div class="modal-action">
-
-          <form method="dialog">
-            <button class="btn">Batal</button>
-          </form>
-
-          <button class="btn btn-error" @click="confirmLogout">
-            Ya, Logout
-          </button>
-
-        </div>
-      </div>
-    </dialog>
 
     <!-- Notifikasi Submit Data -->
     <div v-if="notification.show" class="fixed inset-0 flex items-center justify-center z-50">
@@ -265,13 +251,33 @@
     </div>
 
   </div>
+
 </template>
 
 <script setup lang="ts">
 
 import { ref, onMounted, computed } from 'vue'
 import { useUser } from '~/composables/useUser'
-import { useRouter } from 'vue-router'
+
+definePageMeta({
+  middleware: 'auth'
+})
+
+const { userNama } = useUser()
+
+const rows = ref<any[]>([])
+
+const form = ref({
+  nama: '',
+  tanggal: '',
+  jenisSurat: '',
+  jumlah: 1
+})
+
+const months = [
+  "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+  "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+]
 
 const notification = ref({
   show: false,
@@ -290,24 +296,6 @@ const showNotification = (type: string, message: string) => {
     notification.value.show = false
   }, 3000)
 }
-
-const router = useRouter()
-
-const { userNama } = useUser()
-
-const rows = ref<any[]>([])
-
-const form = ref({
-  nama: '',
-  tanggal: '',
-  jenisSurat: '',
-  jumlah: 1
-})
-
-const months = [
-  "Januari", "Februari", "Maret", "April", "Mei", "Juni",
-  "Juli", "Agustus", "September", "Oktober", "November", "Desember"
-]
 
 const selectedMonth = ref("Januari")
 
@@ -390,35 +378,6 @@ const submitForm = async () => {
     isSubmitting.value = false
 
   }
-
-}
-
-const logout = () => {
-
-  const nip = useCookie('nip')
-  const nama = useCookie('nama')
-  const role = useCookie('role')
-
-  nip.value = null
-  nama.value = null
-  role.value = null
-
-  router.push('/login')
-
-}
-
-const openLogoutModal = () => {
-
-  const modal = document.getElementById('logout_modal') as HTMLDialogElement
-  modal?.showModal()
-
-}
-
-const confirmLogout = () => {
-
-  const modal = document.getElementById('logout_modal') as HTMLDialogElement
-  modal?.close()
-  logout()
 
 }
 

@@ -74,6 +74,10 @@
 
 <script setup>
 
+definePageMeta({
+  layout: "auth"
+})
+
 const nip = ref('')
 const password = ref('')
 const error = ref('')
@@ -92,7 +96,7 @@ const handleLogin = async () => {
       }
     })
 
-    return navigateTo('/form-dinas')
+    return navigateTo('/dashboard')
 
   } catch (err) {
 
