@@ -15,7 +15,7 @@ function formatTanggal(dateStr: string) {
 }
 
 // =========================
-// NORMALISASI TANGGAL
+// NORMALISASI YYYY-MM-DD
 // =========================
 function normalizeDate(dateStr: string) {
   if (!dateStr) return ''
@@ -25,17 +25,28 @@ function normalizeDate(dateStr: string) {
 }
 
 // =========================
-// SALDO AWAL
+// MAP BULAN
+// =========================
+function getMonthIndex(bulan: string) {
+  const map: any = {
+    januari: 0, februari: 1, maret: 2, april: 3, mei: 4, juni: 5,
+    juli: 6, agustus: 7, september: 8, oktober: 9, november: 10, desember: 11
+  }
+  return map[bulan]
+}
+
+// =========================
+// SALDO AWAL (bulan sebelumnya)
 // =========================
 async function getSaldoAwal(sheets: any, spreadsheetId: string, user: string, bulan: string) {
 
-  const mapBulan: any = {
+  const bulanMap: any = {
     januari: 0, februari: 1, maret: 2, april: 3, mei: 4, juni: 5,
     juli: 6, agustus: 7, september: 8, oktober: 9, november: 10, desember: 11
   }
 
   let year = new Date().getFullYear()
-  let monthIndex = mapBulan[bulan] - 1
+  let monthIndex = bulanMap[bulan] - 1
 
   if (monthIndex < 0) {
     monthIndex = 11
@@ -91,7 +102,7 @@ async function getSaldoAwal(sheets: any, spreadsheetId: string, user: string, bu
 }
 
 // =========================
-// MAIN
+// MAIN HANDLER
 // =========================
 export default defineEventHandler(async (event) => {
 
@@ -110,10 +121,31 @@ export default defineEventHandler(async (event) => {
 
     const user = namaUser.toLowerCase().trim()
 
+    const tahun = new Date().getFullYear()
+    const monthIndex = getMonthIndex(String(bulan))
+
     const map: any = {}
 
     // =========================
-    // SK TERIMA
+    // INIT SEMUA TANGGAL
+    // =========================
+
+    const daysInMonth = new Date(tahun, monthIndex + 1, 0).getDate()
+
+    for (let i = 1; i <= daysInMonth; i++) {
+      const raw = `${tahun}-${String(monthIndex + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`
+
+      map[raw] = {
+        tanggal: formatTanggal(raw),
+        tanggal_raw: raw,
+        terima: { spso: 0, npp: 0, ntp: 0, jumlah: 0 },
+        kembali: { spso: 0, npp: 0, ntp: 0, jumlah: 0 },
+        sisa: { spso: 0, npp: 0, ntp: 0, jumlah: 0 }
+      }
+    }
+
+    // =========================
+    // SK TERIMA (HARIAN)
     // =========================
 
     const terimaRes = await sheets.spreadsheets.values.get({
@@ -127,28 +159,19 @@ export default defineEventHandler(async (event) => {
       const nama = (row[2] || '').toLowerCase().trim()
       const jenis = (row[3] || '').toLowerCase().trim()
       const jumlah = Number(row[4] || 0)
-      const bulanRow = (row[1] || '').toLowerCase().trim()
 
-      if (!raw || nama !== user || bulanRow !== bulan) return
+      if (!raw || nama !== user || !map[raw]) return
 
-      if (!map[raw]) {
-        map[raw] = {
-          tanggal: formatTanggal(raw),
-          tanggal_raw: raw,
-          terima: { spso: 0, npp: 0, ntp: 0, jumlah: 0 },
-          kembali: { spso: 0, npp: 0, ntp: 0, jumlah: 0 },
-          sisa: { spso: 0, npp: 0, ntp: 0, jumlah: 0 }
-        }
-      }
+      const d = new Date(raw)
+      if (d.getFullYear() !== tahun || d.getMonth() !== monthIndex) return
 
       if (jenis === 'spso') map[raw].terima.spso += jumlah
       if (jenis === 'npp') map[raw].terima.npp += jumlah
       if (jenis === 'ntp') map[raw].terima.ntp += jumlah
-
     })
 
     // =========================
-    // SK KEMBALI
+    // SK KEMBALI (HARIAN)
     // =========================
 
     const kembaliRes = await sheets.spreadsheets.values.get({
@@ -162,28 +185,19 @@ export default defineEventHandler(async (event) => {
       const nama = (row[2] || '').toLowerCase().trim()
       const jenis = (row[3] || '').toLowerCase().trim()
       const jumlah = Number(row[4] || 0)
-      const bulanRow = (row[5] || '').toLowerCase().trim()
 
-      if (!raw || nama !== user || bulanRow !== bulan) return
+      if (!raw || nama !== user || !map[raw]) return
 
-      if (!map[raw]) {
-        map[raw] = {
-          tanggal: formatTanggal(raw),
-          tanggal_raw: raw,
-          terima: { spso: 0, npp: 0, ntp: 0, jumlah: 0 },
-          kembali: { spso: 0, npp: 0, ntp: 0, jumlah: 0 },
-          sisa: { spso: 0, npp: 0, ntp: 0, jumlah: 0 }
-        }
-      }
+      const d = new Date(raw)
+      if (d.getFullYear() !== tahun || d.getMonth() !== monthIndex) return
 
       if (jenis === 'spso') map[raw].kembali.spso += jumlah
       if (jenis === 'npp') map[raw].kembali.npp += jumlah
       if (jenis === 'ntp') map[raw].kembali.ntp += jumlah
-
     })
 
     // =========================
-    // TOTAL
+    // TOTAL HARIAN
     // =========================
 
     Object.values(map).forEach((item: any) => {
@@ -211,49 +225,12 @@ export default defineEventHandler(async (event) => {
     )
 
     // =========================
-    // 🔥 INSERT BARIS SALDO AWAL
-    // =========================
-
-    if (sorted.length > 0) {
-
-      const firstDate = new Date(sorted[0].tanggal_raw)
-      firstDate.setDate(firstDate.getDate() - 1)
-
-      const prevRaw = normalizeDate(firstDate.toISOString())
-
-      sorted.unshift({
-        tanggal: formatTanggal(prevRaw),
-        tanggal_raw: prevRaw,
-        terima: { spso: 0, npp: 0, ntp: 0, jumlah: 0 },
-        kembali: { spso: 0, npp: 0, ntp: 0, jumlah: 0 },
-        sisa: { spso: 0, npp: 0, ntp: 0, jumlah: 0 },
-        isSaldoAwal: true
-      })
-
-    }
-
-    // =========================
-    // 🔥 RUNNING SISA
+    // RUNNING SISA (FINAL BENAR)
     // =========================
 
     let prev = { ...saldoAwal }
 
-    sorted.forEach((item: any, index: number) => {
-
-      // baris saldo awal
-      if (index === 0 && item.isSaldoAwal) {
-
-        item.sisa.spso = prev.spso
-        item.sisa.npp = prev.npp
-        item.sisa.ntp = prev.ntp
-
-        item.sisa.jumlah =
-          item.sisa.spso +
-          item.sisa.npp +
-          item.sisa.ntp
-
-        return
-      }
+    sorted.forEach((item: any) => {
 
       item.sisa.spso =
         prev.spso +
