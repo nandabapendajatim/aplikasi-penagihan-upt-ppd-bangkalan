@@ -126,15 +126,15 @@
                     <td>{{ totalTerima.ntp }}</td>
                     <td>{{ totalTerima.jumlah }}</td>
 
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
+                    <td>{{ totalKembali.spso }}</td>
+                    <td>{{ totalKembali.npp }}</td>
+                    <td>{{ totalKembali.ntp }}</td>
+                    <td>{{ totalKembali.jumlah }}</td>
 
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
+                    <td>{{ totalSisa.spso }}</td>
+                    <td>{{ totalSisa.npp }}</td>
+                    <td>{{ totalSisa.ntp }}</td>
+                    <td class="text-error">{{ totalSisa.jumlah }}</td>
 
                   </tr>
 
@@ -338,6 +338,38 @@ const totalTerima = computed(() => {
     return acc
 
   }, { spso: 0, npp: 0, ntp: 0, jumlah: 0 })
+
+})
+
+const totalKembali = computed(() => {
+
+  return rows.value.reduce((acc: any, item: any) => {
+
+    acc.spso += Number(item.kembali?.spso || 0)
+    acc.npp += Number(item.kembali?.npp || 0)
+    acc.ntp += Number(item.kembali?.ntp || 0)
+    acc.jumlah += Number(item.kembali?.jumlah || 0)
+
+    return acc
+
+  }, { spso: 0, npp: 0, ntp: 0, jumlah: 0 })
+
+})
+
+const totalSisa = computed(() => {
+
+  if (!rows.value.length) {
+    return { spso: 0, npp: 0, ntp: 0, jumlah: 0 }
+  }
+
+  const last = rows.value[rows.value.length - 1]
+
+  return {
+    spso: Number(last.sisa?.spso || 0),
+    npp: Number(last.sisa?.npp || 0),
+    ntp: Number(last.sisa?.ntp || 0),
+    jumlah: Number(last.sisa?.jumlah || 0)
+  }
 
 })
 
