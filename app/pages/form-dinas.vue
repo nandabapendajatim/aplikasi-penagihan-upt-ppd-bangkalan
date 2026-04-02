@@ -294,7 +294,7 @@ const showNotification = (type: string, message: string) => {
 
   setTimeout(() => {
     notification.value.show = false
-  }, 3000)
+  }, 750)
 }
 
 const selectedMonth = ref("Januari")
