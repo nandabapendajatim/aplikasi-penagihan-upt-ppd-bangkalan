@@ -37,7 +37,7 @@
 
                   <tr>
 
-                    <th rowspan="2" class="bg-base-300 text-base-content">
+                    <th rowspan="2" class="bg-base-300 text-base-content whitespace-nowrap">
                       Tanggal
                     </th>
 
@@ -80,7 +80,9 @@
 
                   <tr v-for="(row, index) in rows" :key="index">
 
-                    <td>{{ row.tanggal }}</td>
+                    <td class="whitespace-nowrap text-xs font-medium">
+                      {{ row.tanggal }}
+                    </td>
 
                     <!-- SK TERIMA -->
                     <td>{{ row.terima.spso }}</td>
