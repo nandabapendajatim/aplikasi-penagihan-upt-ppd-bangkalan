@@ -1,9 +1,29 @@
-import puppeteer from 'puppeteer'
 import { getGoogleSheets } from '../../utils/google'
-import { getCookie } from 'h3'
+import { getCookie, getRequestHeader, readBody, setHeader, createError } from 'h3'
+import chromium from '@sparticuz/chromium'
 
 export default defineEventHandler(async (event) => {
+  // ✅ PUPPETEER INIT (NO TOP-LEVEL AWAIT)
+  const initPuppeteer = async () => {
+    const isProduction = process.env.NODE_ENV === 'production'
+    
+    let puppeteer;
+    if (isProduction) {
+      puppeteer = (await import('puppeteer-core')).default;
+    } else {
+      puppeteer = (await import('puppeteer')).default;
+    }
+
+    return {
+      puppeteer,
+      isProduction,
+      chromium
+    }
+  }
+
   try {
+    const { puppeteer, isProduction, chromium } = await initPuppeteer()
+    
     const body = await readBody(event)
     const { startDate, endDate } = body
 
@@ -56,59 +76,59 @@ export default defineEventHandler(async (event) => {
 
     const map: any = {}
 
-      // =========================
-      // TERIMA
-      // =========================
-      ; (terimaRes.data.values || []).forEach((r: any[]) => {
-        const raw = normalize(r[0])
-        const nama = (r[2] || '').toLowerCase().trim()
-        const jenis = (r[3] || '').toLowerCase().trim()
-        const jumlah = Number(r[4] || 0)
+    // =========================
+    // TERIMA
+    // =========================
+    ; (terimaRes.data.values || []).forEach((r: any[]) => {
+      const raw = normalize(r[0])
+      const nama = (r[2] || '').toLowerCase().trim()
+      const jenis = (r[3] || '').toLowerCase().trim()
+      const jumlah = Number(r[4] || 0)
 
-        if (nama !== user) return
-        if (raw < startDate || raw > endDate) return
+      if (nama !== user) return
+      if (raw < startDate || raw > endDate) return
 
-        if (!map[raw]) {
-          map[raw] = {
-            tanggal: raw,
-            terima: { spso: 0, npp: 0, ntp: 0, jumlah: 0 },
-            kembali: { spso: 0, npp: 0, ntp: 0, jumlah: 0 },
-            sisa: { spso: 0, npp: 0, ntp: 0, jumlah: 0 },
-            sisa_lalu: { spso: 0, npp: 0, ntp: 0, jumlah: 0 }
-          }
+      if (!map[raw]) {
+        map[raw] = {
+          tanggal: raw,
+          terima: { spso: 0, npp: 0, ntp: 0, jumlah: 0 },
+          kembali: { spso: 0, npp: 0, ntp: 0, jumlah: 0 },
+          sisa: { spso: 0, npp: 0, ntp: 0, jumlah: 0 },
+          sisa_lalu: { spso: 0, npp: 0, ntp: 0, jumlah: 0 }
         }
+      }
 
-        if (jenis === 'spso') map[raw].terima.spso += jumlah
-        if (jenis === 'npp') map[raw].terima.npp += jumlah
-        if (jenis === 'ntp') map[raw].terima.ntp += jumlah
-      })
+      if (jenis === 'spso') map[raw].terima.spso += jumlah
+      if (jenis === 'npp') map[raw].terima.npp += jumlah
+      if (jenis === 'ntp') map[raw].terima.ntp += jumlah
+    })
 
-      // =========================
-      // KEMBALI
-      // =========================
-      ; (kembaliRes.data.values || []).forEach((r: any[]) => {
-        const raw = normalize(r[0])
-        const nama = (r[2] || '').toLowerCase().trim()
-        const jenis = (r[3] || '').toLowerCase().trim()
-        const jumlah = Number(r[4] || 0)
+    // =========================
+    // KEMBALI
+    // =========================
+    ; (kembaliRes.data.values || []).forEach((r: any[]) => {
+      const raw = normalize(r[0])
+      const nama = (r[2] || '').toLowerCase().trim()
+      const jenis = (r[3] || '').toLowerCase().trim()
+      const jumlah = Number(r[4] || 0)
 
-        if (nama !== user) return
-        if (raw < startDate || raw > endDate) return
+      if (nama !== user) return
+      if (raw < startDate || raw > endDate) return
 
-        if (!map[raw]) {
-          map[raw] = {
-            tanggal: raw,
-            terima: { spso: 0, npp: 0, ntp: 0, jumlah: 0 },
-            kembali: { spso: 0, npp: 0, ntp: 0, jumlah: 0 },
-            sisa: { spso: 0, npp: 0, ntp: 0, jumlah: 0 },
-            sisa_lalu: { spso: 0, npp: 0, ntp: 0, jumlah: 0 }
-          }
+      if (!map[raw]) {
+        map[raw] = {
+          tanggal: raw,
+          terima: { spso: 0, npp: 0, ntp: 0, jumlah: 0 },
+          kembali: { spso: 0, npp: 0, ntp: 0, jumlah: 0 },
+          sisa: { spso: 0, npp: 0, ntp: 0, jumlah: 0 },
+          sisa_lalu: { spso: 0, npp: 0, ntp: 0, jumlah: 0 }
         }
+      }
 
-        if (jenis === 'spso') map[raw].kembali.spso += jumlah
-        if (jenis === 'npp') map[raw].kembali.npp += jumlah
-        if (jenis === 'ntp') map[raw].kembali.ntp += jumlah
-      })
+      if (jenis === 'spso') map[raw].kembali.spso += jumlah
+      if (jenis === 'npp') map[raw].kembali.npp += jumlah
+      if (jenis === 'ntp') map[raw].kembali.ntp += jumlah
+    })
 
     // =========================
     // SORT + HITUNG
@@ -121,7 +141,6 @@ export default defineEventHandler(async (event) => {
       )
 
     sorted.forEach((item: any) => {
-
       item.tanggal_format = formatTanggal(item.tanggal)
 
       item.terima.jumlah =
@@ -134,7 +153,6 @@ export default defineEventHandler(async (event) => {
         item.kembali.npp +
         item.kembali.ntp
 
-      // ✅ SISA SK LALU (FIX)
       item.sisa_lalu = {
         spso: prev.spso,
         npp: prev.npp,
@@ -142,7 +160,6 @@ export default defineEventHandler(async (event) => {
         jumlah: prev.spso + prev.npp + prev.ntp
       }
 
-      // SISA HARI INI
       item.sisa.spso = prev.spso + item.terima.spso - item.kembali.spso
       item.sisa.npp = prev.npp + item.terima.npp - item.kembali.npp
       item.sisa.ntp = prev.ntp + item.terima.ntp - item.kembali.ntp
@@ -157,7 +174,6 @@ export default defineEventHandler(async (event) => {
         npp: item.sisa.npp,
         ntp: item.sisa.ntp
       }
-
     })
 
     const host = getRequestHeader(event, 'host')

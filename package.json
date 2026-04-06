@@ -7,10 +7,11 @@
     "dev": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
-    "postinstall": "nuxt prepare && npx puppeteer browsers install chrome"
+    "postinstall": "nuxt prepare"
   },
   "dependencies": {
     "@iconify/vue": "^5.0.0",
+    "@sparticuz/chromium": "^143.0.4",
     "bcrypt": "^6.0.0",
     "chart.js": "^4.5.1",
     "daisyui": "^5.5.19",
@@ -18,6 +19,7 @@
     "nuxt": "^4.3.1",
     "pdf-lib": "^1.17.1",
     "puppeteer": "^24.40.0",
+    "puppeteer-core": "^24.40.0",
     "vue": "^3.5.28",
     "vue-chartjs": "^5.3.3",
     "vue-router": "^4.6.4"
