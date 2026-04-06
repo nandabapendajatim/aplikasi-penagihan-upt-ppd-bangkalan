@@ -171,7 +171,7 @@ export default defineEventHandler(async (event) => {
       return `
         <div class="laporan">
 
-          <table style="border:none;border-collapse:collapse;font-size:16px" width="100%">
+          <table style="border:none;border-collapse:collapse;font-size:16px;font-weight:bold" width="100%">
             <tr>
               <td style="border:none;text-align:center" width="20%"><img src="${baseUrl}/logo-kantor.png" width="60" /></td>
               <td style="border:none;text-align:center" width="60%">UNIT PELAKSANA TEKNIS <br> PENGELOLAAN PENDAPATAN DEARAH BANGKALAN</td>

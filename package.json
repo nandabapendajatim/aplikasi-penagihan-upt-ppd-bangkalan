@@ -7,7 +7,7 @@
     "dev": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
-    "postinstall": "nuxt prepare"
+    "postinstall": "nuxt prepare && npx puppeteer browsers install chrome"
   },
   "dependencies": {
     "@iconify/vue": "^5.0.0",
