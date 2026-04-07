@@ -13,31 +13,32 @@
 
           <div class="card-body">
 
-            <div class="flex justify-between items-center mb-4">
-
-              <h2 class="card-title">
-                Data {{ selectedMonth }}
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4 items-center">
+              <!-- Title - HAPUS card-title margin -->
+              <h2 class="font-bold text-xl m-0 p-0 text-base-content">
+                Data {{ selectedMonth }} {{ selectedYear }}
               </h2>
 
-              <select v-model="selectedMonth" @change="fetchData" class="select select-bordered">
-
-                <option v-for="bulan in months" :key="bulan" :value="bulan">
-                  {{ bulan }}
-                </option>
-
-              </select>
-
+              <!-- Dropdowns -->
+              <div class="flex gap-2 justify-end">
+                <select v-model="selectedMonth" @change="fetchData" class="select select-bordered select-sm">
+                  <option v-for="bulan in months" :key="bulan" :value="bulan">{{ bulan }}</option>
+                </select>
+                <select v-model="selectedYear" @change="fetchData" class="select select-bordered select-sm">
+                  <option v-for="tahun in availableYears" :key="tahun" :value="tahun">{{ tahun }}</option>
+                </select>
+              </div>
             </div>
 
             <div class="overflow-x-auto max-h-[600px] overflow-y-auto">
 
-              <table class="table table-zebra text-center">
+              <table class="table table-zebra text-center w-full table-fixed">
 
                 <thead class="sticky top-0 z-10 text-white">
 
                   <tr>
 
-                    <th rowspan="2" class="bg-base-300 text-base-content whitespace-nowrap">
+                    <th rowspan="2" class="w-[140px] bg-base-300 text-base-content whitespace-nowrap text-sm">
                       Tanggal
                     </th>
 
@@ -281,6 +282,10 @@ const months = [
   "Juli", "Agustus", "September", "Oktober", "November", "Desember"
 ]
 
+const selectedMonth = ref("")
+const selectedYear = ref(2026)
+const currentYear = ref(new Date().getFullYear())
+
 const notification = ref({
   show: false,
   type: 'success',
@@ -299,7 +304,50 @@ const showNotification = (type: string, message: string) => {
   }, 750)
 }
 
-const selectedMonth = ref("Januari")
+const showWarning = (type: string, message: string) => {
+  notification.value = {
+    show: true,
+    type,
+    message
+  }
+
+  setTimeout(() => {
+    notification.value.show = false
+  }, 5000)
+}
+
+// Auto-set bulan berjalan
+const currentMonthIndex = new Date().getMonth() // 0=Januari
+// GANTI/UPDATE BAGIAN INI SAJA:
+const now = new Date()
+const previousMonth = (now.getMonth() + 11) % 12
+const previousYear = now.getMonth() === 0 ? now.getFullYear() - 1 : now.getFullYear()
+
+// Filter
+selectedMonth.value = months[previousMonth]
+selectedYear.value = previousYear
+
+// Form tanggal default: 1 bulan lalu
+form.value.tanggal = `${previousYear}-${String(previousMonth + 1).padStart(2, '0')}-01`
+
+// Generate tahun available (2026 - sekarang + 2 tahun ke depan)
+const availableYears = computed(() => {
+  const years = []
+  const startYear = 2026
+  const endYear = currentYear.value + 2
+
+  for (let year = startYear; year <= endYear; year++) {
+    years.push(year)
+  }
+  return years
+})
+
+// Helper extract bulan dari tanggal
+const getMonthNameFromDate = (dateString: string) => {
+  if (!dateString) return ''
+  const date = new Date(dateString + 'T00:00:00') // Pastikan valid date
+  return months[Math.floor(date.getMonth())]
+}
 
 const jenisSuratOptions = ref(['SPSO', 'NPP', 'NTP'])
 
@@ -375,44 +423,68 @@ const totalSisa = computed(() => {
 
 })
 
+// Update submitForm dengan validasi bulan & tahun
 const submitForm = async () => {
+  // Validasi bulan & tahun
+  if (form.value.tanggal && form.value.jenisSurat) {
+    const inputDate = new Date(form.value.tanggal + 'T00:00:00')
+    const inputMonth = months[Math.floor(inputDate.getMonth())]
+    const inputYear = inputDate.getFullYear()
 
-  if (!form.value.tanggal || !form.value.jenisSurat) {
-    showNotification('error', 'Tanggal dan Jenis Surat harus diisi!')
+    // Cek bulan
+    if (inputMonth !== selectedMonth.value) {
+      showWarning('error',
+        `❌ Bulan tidak sesuai!\n` +
+        `Filter: ${selectedMonth.value} ${selectedYear.value}\n` +
+        `Input: ${inputMonth} ${inputYear}\n\n` +
+        `Ubah filter bulan ke "${inputMonth}" dulu!`
+      )
+      return
+    }
+
+    // Cek tahun
+    if (inputYear !== selectedYear.value) {
+      showWarning('error',
+        `❌ Tahun tidak sesuai!\n` +
+        `Filter: ${selectedMonth.value} ${selectedYear.value}\n` +
+        `Input: ${inputMonth} ${inputYear}\n\n` +
+        `Ubah filter tahun ke "${inputYear}" dulu!`
+      )
+      return
+    }
+  }
+
+  // Validasi form lain
+  if (!form.value.tanggal || !form.value.jenisSurat || !form.value.jumlah) {
+    showNotification('error', 'Semua field wajib diisi!')
     return
   }
 
   isSubmitting.value = true
 
   try {
-
     await $fetch('/api/inputDinas', {
       method: 'POST',
-      body: form.value
+      body: {
+        ...form.value,
+        tahun: selectedYear.value, // Kirim tahun juga ke API
+        bulan: selectedMonth.value.toLowerCase()
+      }
     })
 
-    // reset form
+    // Reset form (keep tanggal biar user lanjut input)
     form.value.jenisSurat = ''
     form.value.jumlah = 1
 
-    // reload tabel
     await fetchData()
-
-    // notif sukses
-    showNotification('success', 'Data berhasil disimpan')
+    showNotification('success', '✅ Data berhasil disimpan!')
 
   } catch (err) {
-
     console.error(err)
-
-    showNotification('error', 'Gagal mengirim data')
-
+    showNotification('error', '❌ Gagal menyimpan data')
   } finally {
-
     isSubmitting.value = false
-
   }
-
 }
 
 </script>
