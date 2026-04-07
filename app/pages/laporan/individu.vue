@@ -130,6 +130,7 @@ const cetak = async () => {
   try {
     const res = await $fetch('/api/laporan/individu', {
       method: 'POST',
+      responseType: 'blob', 
       body: {
         startDate: startDate.value,
         endDate: endDate.value
