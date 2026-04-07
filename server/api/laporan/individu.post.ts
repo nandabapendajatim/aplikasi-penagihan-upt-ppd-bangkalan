@@ -303,7 +303,12 @@ export default defineEventHandler(async (event) => {
 
     await page.setContent(`
       <style>
-        body { font-family: Arial; margin: 0; }
+        @import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
+
+        body {
+          font-family: 'Roboto', Arial, sans-serif;
+          margin: 0;
+        }
 
         .page {
           height: 100vh;
@@ -312,11 +317,12 @@ export default defineEventHandler(async (event) => {
         }
 
         .laporan {
-          height: 50%;
+          min-height: 48%;
           padding: 10px 20px;
           padding-left: 80px; /* khusus jilid */
           border-bottom: 1px dashed black;
           box-sizing: border-box;
+          page-break-inside: avoid;
         }
 
         .laporan:last-child { border-bottom: none; }
@@ -334,6 +340,8 @@ export default defineEventHandler(async (event) => {
 
       ${generateHTML(sorted)}
     `)
+
+    await page.evaluateHandle('document.fonts.ready')
 
     const pdf = await page.pdf({
       format: 'A4',
