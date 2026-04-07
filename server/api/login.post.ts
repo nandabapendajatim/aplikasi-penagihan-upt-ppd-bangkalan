@@ -8,7 +8,7 @@ export default defineEventHandler(async (event) => {
 
   const response = await sheets.spreadsheets.values.get({
     spreadsheetId: config.spreadsheetId,
-    range: 'master_pegawai!A2:E'
+    range: 'master_pegawai!A2:F'
   })
 
   const rows = response.data.values || []
@@ -38,6 +38,7 @@ export default defineEventHandler(async (event) => {
   setCookie(event, 'nip', user[1], { path: '/' })
   setCookie(event, 'nama', user[2], { path: '/' })
   setCookie(event, 'role', user[4], { path: '/' })
+  setCookie(event, 'seksi', user[5], { path: '/' })
 
   return { success: true }
 })

@@ -31,8 +31,10 @@ export default defineEventHandler(async (event) => {
     if (!namaUser) {
       throw createError({ statusCode: 401, statusMessage: 'Unauthorized' })
     }
-
+    
+    const namaSeksi = getCookie(event, 'seksi') || ''
     const user = namaUser.toLowerCase().trim()
+    const seksi = namaSeksi.toLowerCase().trim()
 
     const config = useRuntimeConfig()
     const sheets = getGoogleSheets()
@@ -214,7 +216,7 @@ export default defineEventHandler(async (event) => {
             <tr>
               <td style="border:none;text-align:left">SEKSI</td>
               <td style="border:none">:</td>
-              <td style="border:none;text-align:left"></td>
+              <td style="border:none;text-align:left">${namaSeksi}</td>
             </tr>
           </table>
 
