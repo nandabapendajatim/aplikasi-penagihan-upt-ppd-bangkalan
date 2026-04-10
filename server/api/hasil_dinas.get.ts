@@ -4,14 +4,20 @@ import { getCookie } from 'h3'
 // =========================
 // FORMAT TANGGAL DISPLAY
 // =========================
-const BULAN_NAMA = [
-  'JAN', 'FEB', 'MAR', 'APR', 'MEI', 'JUN',
-  'JUL', 'AGU', 'SEP', 'OKT', 'NOV', 'DES'
-]
+const formatTanggal = (d: string) => {
+  const hari = [
+    'Minggu', 'Senin', 'Selasa', 'Rabu',
+    'Kamis', 'Jumat', 'Sabtu'
+  ]
 
-function formatTanggal(dateStr: string) {
-  const d = new Date(dateStr + 'T00:00:00')
-  return `${d.getDate()} ${BULAN_NAMA[d.getMonth()]} ${d.getFullYear()}`
+  const bulan = [
+    'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun',
+  'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'
+  ]
+
+  const x = new Date(d)
+
+  return `${hari[x.getDay()]}, ${x.getDate()} ${bulan[x.getMonth()]} ${x.getFullYear()}`
 }
 
 // =========================
