@@ -44,9 +44,17 @@ async function getSaldoAwal(sheets: any, spreadsheetId: string, user: string, bu
 
   const saldo = { spso: 0, npp: 0, ntp: 0 }
 
-  const sameMonth = (tgl: string) => {
+  // const sameMonth = (tgl: string) => {
+  //   const d = new Date(tgl)
+  //   return d.getFullYear() === year && d.getMonth() === monthIndex
+  // }
+
+  const isBeforeMonth = (tgl: string) => {
     const d = new Date(tgl)
-    return d.getFullYear() === year && d.getMonth() === monthIndex
+    return (
+      d.getFullYear() < year ||
+      (d.getFullYear() === year && d.getMonth() < mapBulan[bulan])
+    )
   }
 
   // TERIMA
@@ -55,18 +63,18 @@ async function getSaldoAwal(sheets: any, spreadsheetId: string, user: string, bu
     range: `sk_terima!A2:E`
   })
 
-  ;(terima.data.values || []).forEach((r: any[]) => {
-    const tgl = r[0]
-    const nama = (r[2] || '').toLowerCase().trim()
-    const jenis = (r[3] || '').toLowerCase().trim()
-    const jumlah = Number(r[4] || 0)
+    ; (terima.data.values || []).forEach((r: any[]) => {
+      const tgl = r[0]
+      const nama = (r[2] || '').toLowerCase().trim()
+      const jenis = (r[3] || '').toLowerCase().trim()
+      const jumlah = Number(r[4] || 0)
 
-    if (!tgl || nama !== user || !sameMonth(tgl)) return
+      if (!tgl || nama !== user || !isBeforeMonth(tgl)) return
 
-    if (jenis === 'spso') saldo.spso += jumlah
-    if (jenis === 'npp') saldo.npp += jumlah
-    if (jenis === 'ntp') saldo.ntp += jumlah
-  })
+      if (jenis === 'spso') saldo.spso += jumlah
+      if (jenis === 'npp') saldo.npp += jumlah
+      if (jenis === 'ntp') saldo.ntp += jumlah
+    })
 
   // KEMBALI
   const kembali = await sheets.spreadsheets.values.get({
@@ -74,18 +82,18 @@ async function getSaldoAwal(sheets: any, spreadsheetId: string, user: string, bu
     range: `data_input!A2:F`
   })
 
-  ;(kembali.data.values || []).forEach((r: any[]) => {
-    const tgl = r[0]
-    const nama = (r[2] || '').toLowerCase().trim()
-    const jenis = (r[3] || '').toLowerCase().trim()
-    const jumlah = Number(r[4] || 0)
+    ; (kembali.data.values || []).forEach((r: any[]) => {
+      const tgl = r[0]
+      const nama = (r[2] || '').toLowerCase().trim()
+      const jenis = (r[3] || '').toLowerCase().trim()
+      const jumlah = Number(r[4] || 0)
 
-    if (!tgl || nama !== user || !sameMonth(tgl)) return
+      if (!tgl || nama !== user || !isBeforeMonth(tgl)) return
 
-    if (jenis === 'spso') saldo.spso -= jumlah
-    if (jenis === 'npp') saldo.npp -= jumlah
-    if (jenis === 'ntp') saldo.ntp -= jumlah
-  })
+      if (jenis === 'spso') saldo.spso -= jumlah
+      if (jenis === 'npp') saldo.npp -= jumlah
+      if (jenis === 'ntp') saldo.ntp -= jumlah
+    })
 
   return saldo
 }
@@ -121,31 +129,31 @@ export default defineEventHandler(async (event) => {
       range: `sk_terima!A2:E`
     })
 
-    ;(terimaRes.data.values || []).forEach((row: any[]) => {
+      ; (terimaRes.data.values || []).forEach((row: any[]) => {
 
-      const raw = normalizeDate(row[0])
-      const nama = (row[2] || '').toLowerCase().trim()
-      const jenis = (row[3] || '').toLowerCase().trim()
-      const jumlah = Number(row[4] || 0)
-      const bulanRow = (row[1] || '').toLowerCase().trim()
+        const raw = normalizeDate(row[0])
+        const nama = (row[2] || '').toLowerCase().trim()
+        const jenis = (row[3] || '').toLowerCase().trim()
+        const jumlah = Number(row[4] || 0)
+        const bulanRow = (row[1] || '').toLowerCase().trim()
 
-      if (!raw || nama !== user || bulanRow !== bulan) return
+        if (!raw || nama !== user || bulanRow !== bulan) return
 
-      if (!map[raw]) {
-        map[raw] = {
-          tanggal: formatTanggal(raw),
-          tanggal_raw: raw,
-          terima: { spso: 0, npp: 0, ntp: 0, jumlah: 0 },
-          kembali: { spso: 0, npp: 0, ntp: 0, jumlah: 0 },
-          sisa: { spso: 0, npp: 0, ntp: 0, jumlah: 0 }
+        if (!map[raw]) {
+          map[raw] = {
+            tanggal: formatTanggal(raw),
+            tanggal_raw: raw,
+            terima: { spso: 0, npp: 0, ntp: 0, jumlah: 0 },
+            kembali: { spso: 0, npp: 0, ntp: 0, jumlah: 0 },
+            sisa: { spso: 0, npp: 0, ntp: 0, jumlah: 0 }
+          }
         }
-      }
 
-      if (jenis === 'spso') map[raw].terima.spso += jumlah
-      if (jenis === 'npp') map[raw].terima.npp += jumlah
-      if (jenis === 'ntp') map[raw].terima.ntp += jumlah
+        if (jenis === 'spso') map[raw].terima.spso += jumlah
+        if (jenis === 'npp') map[raw].terima.npp += jumlah
+        if (jenis === 'ntp') map[raw].terima.ntp += jumlah
 
-    })
+      })
 
     // =========================
     // SK KEMBALI
@@ -156,31 +164,31 @@ export default defineEventHandler(async (event) => {
       range: `data_input!A2:F`
     })
 
-    ;(kembaliRes.data.values || []).forEach((row: any[]) => {
+      ; (kembaliRes.data.values || []).forEach((row: any[]) => {
 
-      const raw = normalizeDate(row[0])
-      const nama = (row[2] || '').toLowerCase().trim()
-      const jenis = (row[3] || '').toLowerCase().trim()
-      const jumlah = Number(row[4] || 0)
-      const bulanRow = (row[5] || '').toLowerCase().trim()
+        const raw = normalizeDate(row[0])
+        const nama = (row[2] || '').toLowerCase().trim()
+        const jenis = (row[3] || '').toLowerCase().trim()
+        const jumlah = Number(row[4] || 0)
+        const bulanRow = (row[5] || '').toLowerCase().trim()
 
-      if (!raw || nama !== user || bulanRow !== bulan) return
+        if (!raw || nama !== user || bulanRow !== bulan) return
 
-      if (!map[raw]) {
-        map[raw] = {
-          tanggal: formatTanggal(raw),
-          tanggal_raw: raw,
-          terima: { spso: 0, npp: 0, ntp: 0, jumlah: 0 },
-          kembali: { spso: 0, npp: 0, ntp: 0, jumlah: 0 },
-          sisa: { spso: 0, npp: 0, ntp: 0, jumlah: 0 }
+        if (!map[raw]) {
+          map[raw] = {
+            tanggal: formatTanggal(raw),
+            tanggal_raw: raw,
+            terima: { spso: 0, npp: 0, ntp: 0, jumlah: 0 },
+            kembali: { spso: 0, npp: 0, ntp: 0, jumlah: 0 },
+            sisa: { spso: 0, npp: 0, ntp: 0, jumlah: 0 }
+          }
         }
-      }
 
-      if (jenis === 'spso') map[raw].kembali.spso += jumlah
-      if (jenis === 'npp') map[raw].kembali.npp += jumlah
-      if (jenis === 'ntp') map[raw].kembali.ntp += jumlah
+        if (jenis === 'spso') map[raw].kembali.spso += jumlah
+        if (jenis === 'npp') map[raw].kembali.npp += jumlah
+        if (jenis === 'ntp') map[raw].kembali.ntp += jumlah
 
-    })
+      })
 
     // =========================
     // TOTAL
@@ -219,7 +227,8 @@ export default defineEventHandler(async (event) => {
       const firstDate = new Date(sorted[0].tanggal_raw)
       firstDate.setDate(firstDate.getDate() - 1)
 
-      const prevRaw = normalizeDate(firstDate.toISOString())
+      // const prevRaw = normalizeDate(firstDate.toISOString())
+      const prevRaw = normalizeDate(firstDate)
 
       sorted.unshift({
         tanggal: formatTanggal(prevRaw),
