@@ -36,6 +36,13 @@ export default defineEventHandler(async (event) => {
     const user = namaUser.toLowerCase().trim()
     const seksi = namaSeksi.toLowerCase().trim()
 
+    const truncateName = (nama: string, maxWords: number = 2): string => {
+      if (!nama) return ''
+      const words = nama.trim().split(/\s+/)
+      if (words.length <= maxWords) return nama
+      return words.slice(0, maxWords).join(' ')
+    }
+
     const config = useRuntimeConfig()
     const sheets = getGoogleSheets()
 
@@ -186,12 +193,28 @@ export default defineEventHandler(async (event) => {
     // HTML RENDER
     // =========================
     function renderItem(item: any) {
+
+      const totalSK = {
+        spso: item.terima.spso + item.sisa_lalu.spso,
+        npp: item.terima.npp + item.sisa_lalu.npp,
+        ntp: item.terima.ntp + item.sisa_lalu.ntp,
+        jumlah: item.terima.jumlah + item.sisa_lalu.jumlah
+      }
+
+      // Hitung sisa SK saat ini (Total SK - Kembali)
+      const sisaSK = {
+        spso: totalSK.spso - item.kembali.spso,
+        npp: totalSK.npp - item.kembali.npp,
+        ntp: totalSK.ntp - item.kembali.ntp,
+        jumlah: totalSK.jumlah - item.kembali.jumlah
+      }
+
       return `
         <div class="laporan">
 
           <table style="border:none;border-collapse:collapse;font-size:16px;font-weight:bold" width="100%">
             <tr>
-              <td style="border:none;text-align:center" width="20%"><img src="${baseUrl}/logo-kantor.png" width="60" /></td>
+              <td style="border:none;text-align:center" width="20%"><img src="${baseUrl}/logo-kantor.png" width="55" /></td>
               <td style="border:none;text-align:center" width="60%">UNIT PELAKSANA TEKNIS <br> PENGELOLAAN PENDAPATAN DEARAH BANGKALAN</td>
               <td style="border:none;text-align:center" width="20%"></td>
             </tr>
@@ -201,12 +224,12 @@ export default defineEventHandler(async (event) => {
               <td style="border:none;text-align:center" width="20%"></td>
             </tr>
           </table>
-
+          
           <table style="border:none;border-collapse:collapse;font-size:14px" width="100%">
             <tr>
               <td style="border:none;text-align:left" width="15%">NAMA</td>
-              <td style="border:none" width="5%">:</td>
-              <td style="border:none;text-align:left" width="80%">${namaUser}</td>
+              <td style="border:none" width="5%">:</td><td style="border:none;text-align:left" width="80%">${namaUser}</td>
+              
             </tr>
             <tr>
               <td style="border:none;text-align:left">HARI/TANGGAL</td>
@@ -214,7 +237,7 @@ export default defineEventHandler(async (event) => {
               <td style="border:none;text-align:left">${item.tanggal_format}</td>
             </tr>
             <tr>
-              <td style="border:none;text-align:left">SEKSI</td>
+              <td style="border:none;text-align:left">SEKSI/BAGIAN</td>
               <td style="border:none">:</td>
               <td style="border:none;text-align:left">${namaSeksi}</td>
             </tr>
@@ -238,9 +261,16 @@ export default defineEventHandler(async (event) => {
               <td>${item.sisa_lalu.ntp}</td>
               <td>${item.sisa_lalu.jumlah}</td>
             </tr>
+            <tr style="font-weight: bold; background-color: #f0f0f0;">
+              <td class="text-right">TOTAL SK</td>
+              <td>${totalSK.spso}</td>
+              <td>${totalSK.npp}</td>
+              <td>${totalSK.ntp}</td>
+              <td>${totalSK.jumlah}</td>
+            </tr>
           </table>
 
-          <p style="font-size:12px" class="ket">Keterangan :</p>
+          <br/>
 
           <table style="font-size:14px">
             <tr>
@@ -251,19 +281,31 @@ export default defineEventHandler(async (event) => {
             <tr><td class="text-left">Lapor Jual</td><td></td><td></td><td></td><td></td></tr>
             <tr><td class="text-left">Alamat Tidak Jelas</td><td></td><td></td><td></td><td></td></tr>
             <tr><td class="text-left">Rusak/Hilang</td><td></td><td></td><td></td><td></td></tr>
+            <tr><td class="text-left">Lain-lain</td><td></td><td></td><td></td><td></td></tr>
 
-            <tr>
-              <td class="text-left"><b>TOTAL</b></td>
+            <tr style="font-weight: bold; background-color: #f0f0f0;" >
+              <td class="text-right"><b>TOTAL SK</b></td>
               <td>${item.kembali.spso}</td>
               <td>${item.kembali.npp}</td>
               <td>${item.kembali.ntp}</td>
               <td>${item.kembali.jumlah}</td>
             </tr>
+            <tr style="font-weight: bold; background-color: #e6f3ff;">
+              <td class="text-right">SISA SK SAAT INI</td>
+              <td>${sisaSK.spso}</td>
+              <td>${sisaSK.npp}</td>
+              <td>${sisaSK.ntp}</td>
+              <td>${sisaSK.jumlah}</td>
+            </tr>
           </table>
 
-          <div class="ttd">
-            <p style="font-size:12px">Petugas Dinas Luar</p><br/>
-            <div style="font-size:12px" class="ttd-box">(${namaUser})</div>
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-top: 5px;">
+            <div style="font-size:12px; padding-top: 4px;">Keterangan :</div>
+            
+            <div class="ttd" style="text-align: right;">
+              <p style="font-size:12px; margin: 0;">Petugas Dinas Luar</p><br/>
+              <div style="font-size:12px" class="ttd-box">(${truncateName(namaUser)})</div>
+            </div>
           </div>
         </div>
       `
@@ -333,9 +375,9 @@ export default defineEventHandler(async (event) => {
 
         .text-left { text-align: left; }
 
-        .ttd { margin-top: 10px; text-align: right; }
+        .ttd { margin-top: 5px; text-align: right; }
 
-        .ttd-box { margin-top: 10px; }
+        .ttd-box { margin-top: 15px; }
       </style>
 
       ${generateHTML(sorted)}
@@ -344,7 +386,9 @@ export default defineEventHandler(async (event) => {
     await page.evaluateHandle('document.fonts.ready')
 
     const pdf = await page.pdf({
-      format: 'A4',
+      // format: 'A4',
+      width: '215mm',
+      height: '330mm',
       printBackground: true
     })
 
