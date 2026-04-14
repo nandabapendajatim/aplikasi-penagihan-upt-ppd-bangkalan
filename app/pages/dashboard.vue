@@ -8,7 +8,7 @@
 
       <div>
         <h1 class="text-2xl font-bold">
-          Dashboard
+          Dashboard <!-- {{ selectedMonth }} {{ selectedYear }} -->
         </h1>
 
         <p class="text-sm text-gray-500">
@@ -16,11 +16,21 @@
         </p>
       </div>
 
-      <select v-model="selectedMonth" class="select select-bordered" @change="loadData">
-        <option v-for="m in months" :key="m" :value="m">
-          {{ m }}
-        </option>
-      </select>
+      <div class="flex items-center gap-2">
+
+        <select v-model="selectedMonth" @change="loadData" class="select select-bordered select-sm w-32">
+          <option v-for="m in months" :key="m" :value="m">
+            {{ m }}
+          </option>
+        </select>
+
+        <select v-model="selectedYear" @change="loadData" class="select select-bordered select-sm w-24">
+          <option v-for="y in availableYears" :key="y" :value="y">
+            {{ y }}
+          </option>
+        </select>
+
+      </div>
 
     </div>
 
@@ -201,8 +211,13 @@ const months = [
   "juli", "agustus", "september", "oktober", "november", "desember"
 ]
 
-const currentMonthIndex = new Date().getMonth()
-const selectedMonth = ref(months[currentMonthIndex])
+const now = new Date()
+const selectedMonth = ref(months[(now.getMonth() + 11) % 12])
+const selectedYear = ref(
+  now.getMonth() === 0 ? now.getFullYear() - 1 : now.getFullYear()
+)
+
+const availableYears = [2026, 2027, 2028]
 
 const terima = ref({ spso: 0, npp: 0, ntp: 0 })
 const kembali = ref({ spso: 0, npp: 0, ntp: 0 })
@@ -222,24 +237,18 @@ const totalKembali = computed(() => {
 const loadData = async () => {
 
   const data = await $fetch('/api/dashboard-summary', {
-    query: { bulan: selectedMonth.value }
+    query: {
+      bulan: selectedMonth.value,
+      tahun: selectedYear.value
+    }
   })
-
-  // ======================
-  // CARD DATA
-  // ======================
 
   terima.value = data.terima
   kembali.value = data.kembali
 
-  // ======================
-  // CHART DATA
-  // ======================
-
   chartLabels.value = data.chart.labels
   chartTerima.value = data.chart.terima
   chartKembali.value = data.chart.kembali
-
 }
 
 onMounted(loadData)

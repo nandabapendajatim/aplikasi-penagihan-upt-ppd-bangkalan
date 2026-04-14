@@ -6,11 +6,11 @@
       <div class="card-body p-8">
 
         <!-- Header -->
-        <div class="text-center mb-8">
-          <h1 class="card-title text-3xl font-bold mb-2">
+        <div class="flex flex-col items-center gap-2 mb-8 text-center">
+          <h1 class="text-2xl font-bold mb-0">
             📊 Laporan Individu
           </h1>
-          <p class="text-base-content/70 text-lg">
+          <p class="text-base-content/70 text-lg max-w-md">
             Cetak laporan berdasarkan periode tanggal
           </p>
         </div>
@@ -130,7 +130,7 @@ const cetak = async () => {
   try {
     const res = await $fetch('/api/laporan/individu', {
       method: 'POST',
-      responseType: 'blob', 
+      responseType: 'blob',
       body: {
         startDate: startDate.value,
         endDate: endDate.value
