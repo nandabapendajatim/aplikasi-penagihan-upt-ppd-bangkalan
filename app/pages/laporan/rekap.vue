@@ -32,7 +32,7 @@
 
                 <table class="table table-bordered w-full text-sm">
 
-                    <thead>
+                    <thead class="sticky top-0 z-10 bg-base-200">
                         <tr class="bg-base-200 text-center">
                             <th rowspan="2">No</th>
                             <th rowspan="2">Nama</th>
