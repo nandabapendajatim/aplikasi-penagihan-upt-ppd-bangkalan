@@ -28,7 +28,8 @@
             </div>
 
             <!-- Table -->
-            <div class="overflow-x-auto">
+            <div class="overflow-x-auto max-h-[600px] overflow-y-auto">
+
                 <table class="table table-bordered w-full text-sm">
 
                     <thead>
@@ -70,7 +71,8 @@
 
                             <td class="font-bold text-primary">{{ row.sisa }}</td>
                         </tr>
-
+                    </tbody>
+                    <tfoot class="sticky bottom-0 z-10 font-bold bg-base-300">
                         <!-- GRAND TOTAL -->
                         <tr class="bg-primary text-primary-content font-bold">
                             <td colspan="2" class="text-left">TOTAL SEMUA</td>
@@ -81,7 +83,7 @@
                             <td>{{ grand.kembali?.total || 0 }}</td>
                             <td>{{ grand.sisa || 0 }}</td>
                         </tr>
-                    </tbody>
+                    </tfoot>
 
                 </table>
             </div>
@@ -129,10 +131,10 @@ const fetchData = async () => {
 onMounted(fetchData)
 
 const downloadPdf = () => {
-  window.open(`/api/laporan/rekap?bulan=${selectedMonth.value}&tahun=${selectedYear.value}&type=pdf`)
+    window.open(`/api/laporan/rekap?bulan=${selectedMonth.value}&tahun=${selectedYear.value}&type=pdf`)
 }
 
 const downloadExcel = () => {
-  window.open(`/api/laporan/rekap?bulan=${selectedMonth.value}&tahun=${selectedYear.value}&type=excel`)
+    window.open(`/api/laporan/rekap?bulan=${selectedMonth.value}&tahun=${selectedYear.value}&type=excel`)
 }
 </script>

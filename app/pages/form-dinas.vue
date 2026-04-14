@@ -32,7 +32,7 @@
 
             <div class="overflow-x-auto max-h-[600px] overflow-y-auto">
 
-              <table class="table table-zebra text-center w-full table-fixed">
+              <table class="table text-center w-full table-fixed">
 
                 <thead class="sticky top-0 z-10 text-white">
 
@@ -79,38 +79,50 @@
 
                 <tbody>
 
-                  <tr v-for="(row, index) in rows" :key="index">
+                  <tr v-for="(row, index) in rows" :key="index" class="hover:bg-base-200 transition duration-200">
 
-                    <td class="whitespace-nowrap text-xs font-medium">
+                    <td class="bg-base-200 text-xs font-medium whitespace-nowrap">
                       {{ row.tanggal }}
                     </td>
 
                     <!-- SK TERIMA -->
-                    <td>{{ row.terima.spso }}</td>
-                    <td>{{ row.terima.npp }}</td>
-                    <td>{{ row.terima.ntp }}</td>
-                    <td>{{ row.terima.jumlah }}</td>
+                    <td class="bg-green-100">{{ row.terima.spso }}</td>
+                    <td class="bg-green-100">{{ row.terima.npp }}</td>
+                    <td class="bg-green-100">{{ row.terima.ntp }}</td>
+                    <td class="bg-green-200 font-semibold">{{ row.terima.jumlah }}</td>
 
                     <!-- SK KEMBALI -->
-                    <td>{{ row.kembali.spso }}</td>
-                    <td>{{ row.kembali.npp }}</td>
-                    <td>{{ row.kembali.ntp }}</td>
-                    <td>{{ row.kembali.jumlah }}</td>
+                    <td class="bg-blue-100">{{ row.kembali.spso }}</td>
+                    <td class="bg-blue-100">{{ row.kembali.npp }}</td>
+                    <td class="bg-blue-100">{{ row.kembali.ntp }}</td>
+                    <td class="bg-blue-200 font-semibold">{{ row.kembali.jumlah }}</td>
 
                     <!-- SISA -->
-                    <td :class="row.sisa.spso < 0 ? 'text-error font-bold' : ''">
+                    <td :class="[
+                      'bg-red-100',
+                      row.sisa.spso < 0 ? 'text-error font-bold' : ''
+                    ]">
                       {{ row.sisa.spso }}
                     </td>
 
-                    <td :class="row.sisa.npp < 0 ? 'text-error font-bold' : ''">
+                    <td :class="[
+                      'bg-red-100',
+                      row.sisa.npp < 0 ? 'text-error font-bold' : ''
+                    ]">
                       {{ row.sisa.npp }}
                     </td>
 
-                    <td :class="row.sisa.ntp < 0 ? 'text-error font-bold' : ''">
+                    <td :class="[
+                      'bg-red-100',
+                      row.sisa.ntp < 0 ? 'text-error font-bold' : ''
+                    ]">
                       {{ row.sisa.ntp }}
                     </td>
 
-                    <td :class="row.sisa.jumlah < 0 ? 'text-error font-bold' : ''">
+                    <td :class="[
+                      'bg-red-200 font-semibold',
+                      row.sisa.jumlah < 0 ? 'text-error font-bold' : ''
+                    ]">
                       {{ row.sisa.jumlah }}
                     </td>
 
@@ -118,7 +130,7 @@
 
                 </tbody>
 
-                <tfoot class="sticky bottom-0 z-10 font-bold bg-base-200">
+                <tfoot class="sticky bottom-0 z-10 font-bold bg-base-300">
 
                   <tr>
 

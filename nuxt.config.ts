@@ -8,5 +8,17 @@ export default defineNuxtConfig({
   runtimeConfig: {
     googleServiceAccountKey: process.env.GOOGLE_SERVICE_ACCOUNT_KEY,
     spreadsheetId: process.env.SPREADSHEET_ID,
+  },
+
+  app: {
+    head: {
+      link: [
+        {
+          rel: 'icon',
+          type: 'image/x-icon',
+          href: '/logo-kantor.png'
+        }
+      ]
+    }
   }
 })
