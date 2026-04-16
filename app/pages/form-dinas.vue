@@ -79,9 +79,20 @@
 
                 <tbody>
 
-                  <tr v-for="(row, index) in rows" :key="index" class="hover:bg-base-200 transition duration-200">
+                  <!-- <tr v-for="(row, index) in rows" :key="index" class="hover:bg-base-200 transition duration-200"> -->
+                  <tr v-for="(row, index) in rows" :key="index" :class="[
+                    'transition duration-200',
+                    isHoliday(row.tanggal_raw)
+                      ? 'bg-red-50'
+                      : 'hover:bg-base-200'
+                  ]">
 
-                    <td class="bg-base-200 text-xs font-medium whitespace-nowrap">
+                    <td :title="isHoliday(row.tanggal_raw) ? 'Hari Libur' : ''" :class="[
+                      'text-xs font-medium whitespace-nowrap',
+                      isHoliday(row.tanggal_raw)
+                        ? 'bg-red-200 text-red-800 font-bold'
+                        : 'bg-base-200'
+                    ]">
                       {{ row.tanggal }}
                     </td>
 
@@ -196,7 +207,16 @@
                   <span class="label-text">Tanggal</span>
                 </label>
 
-                <input type="date" v-model="form.tanggal" class="input input-bordered w-full" required />
+                <input type="date" v-model="form.tanggal" :class="[
+                  'input input-bordered w-full',
+                  isHoliday(form.tanggal)
+                    ? 'bg-red-100 text-red-700 font-semibold'
+                    : ''
+                ]" required />
+
+                <p v-if="isHoliday(form.tanggal)" class="text-red-500 text-xs mt-1">
+                  ⚠️ Tanggal yang dipilih adalah hari libur
+                </p>
 
               </div>
 
@@ -497,6 +517,55 @@ const submitForm = async () => {
   } finally {
     isSubmitting.value = false
   }
+}
+
+// =========================
+// HARI LIBUR 2026
+// =========================
+const holidays: Record<number, string[]> = {
+  2026: [
+    '2026-01-01', // Tahun Baru
+    '2026-01-16', // Isra Mikraj
+    '2026-02-16', // Cuti Bersama Tahun Baru Imlek
+    '2026-02-17', // Tahun Baru Imlek
+    '2026-03-18', // Cuti Bersama Nyepi
+    '2026-03-19', // Nyepi
+    '2026-03-20', // Cuti Bersama Idul Fitri
+    '2026-03-21', // Idul Fitri
+    '2026-03-22', // Idul Fitri
+    '2026-03-23', // Cuti Bersama Idul Fitri
+    '2026-03-24', // Cuti Bersama Idul Fitri
+    '2026-04-03', // Wafat Isa Almasih
+    '2026-05-01', // Hari Buruh
+    '2026-05-14', // Kenaikan Isa Almasih
+    '2026-05-15', // Cuti Bersama Kenaikan Isa Almasih
+    '2026-05-27', // Idul Adha
+    '2026-05-28', // Cuti Bersama Idul Adha
+    '2026-06-01', // Pancasila
+    '2026-06-16', // Tahun Baru Islam
+    '2026-08-17', // Hari Kemerdekaan
+    '2026-08-25', // Maulid Nabi Muhammad
+    '2026-12-24', // Cuti Bersama Natal
+    '2026-12-25'  // Natal
+  ]
+}
+
+// =========================
+// CEK HARI LIBUR
+// =========================
+const isHoliday = (date: string) => {
+  if (!date) return false
+
+  const d = new Date(date)
+  const year = d.getFullYear()
+
+  // ❗ Minggu saja
+  if (d.getDay() === 0) return true
+
+  // ❗ Libur nasional
+  if (holidays[year]?.includes(date)) return true
+
+  return false
 }
 
 </script>
