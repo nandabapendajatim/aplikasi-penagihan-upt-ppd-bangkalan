@@ -1,6 +1,6 @@
 <template>
 
-  <div class="p-2">
+  <div class="p-0">
 
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
@@ -30,15 +30,15 @@
               </div>
             </div>
 
-            <div class="overflow-x-auto max-h-[600px] overflow-y-auto">
+            <div class="overflow-x-auto max-h-[600px] overflow-y-auto rounded-lg p-0">
 
-              <table class="table text-center w-full table-fixed">
+              <table class="table text-center min-w-[900px] text-xs">
 
-                <thead class="sticky top-0 z-10 text-white">
+                <thead class="sticky top-0 z-30 text-white">
 
                   <tr>
 
-                    <th rowspan="2" class="w-[140px] bg-base-300 text-base-content whitespace-nowrap text-sm">
+                    <th rowspan="2" class="w-[140px] bg-base-300 text-base-content text-sm sticky left-0 top-0 z-[40]">
                       Tanggal
                     </th>
 
@@ -87,8 +87,8 @@
                       : 'hover:bg-base-200'
                   ]">
 
-                    <td :title="isHoliday(row.tanggal_raw) ? 'Hari Libur' : ''" :class="[
-                      'text-xs font-medium whitespace-nowrap',
+                    <td :class="[
+                      'sticky left-0 z-10 text-xs font-medium break-words whitespace-normal lg:whitespace-nowrap',
                       isHoliday(row.tanggal_raw)
                         ? 'bg-red-200 text-red-800 font-bold'
                         : 'bg-base-200'

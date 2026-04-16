@@ -3,27 +3,38 @@
         <div class="bg-base-100 rounded-lg shadow-lg p-6 border border-base-200">
 
             <!-- Header -->
-            <div class="flex flex-col items-center gap-4 mb-6">
+            <div class="flex flex-col items-stretch lg:items-center gap-4 mb-6">
                 <h1 class="text-2xl font-bold">
                     📊 Laporan Rekap {{ selectedMonth }} {{ selectedYear }}
                 </h1>
 
-                <div class="flex gap-2 justify-end">
-                    <select v-model="selectedMonth" @change="fetchData" class="select select-bordered select-sm w-32">
-                        <option v-for="b in months" :key="b" :value="b">{{ b }}</option>
-                    </select>
+                <div class="flex flex-col lg:flex-row gap-2 w-full lg:justify-end">
+                    <div class="flex flex-col lg:flex-row gap-2 w-full lg:justify-end">
 
-                    <select v-model="selectedYear" @change="fetchData" class="select select-bordered select-sm w-24">
-                        <option v-for="y in availableYears" :key="y" :value="y">{{ y }}</option>
-                    </select> &nbsp;
-                    <!-- tombol -->
-                    <button @click="downloadPdf" class="btn btn-error btn-sm">
-                        PDF
-                    </button>
+                        <!-- Baris 1 (mobile): Month -->
+                        <select v-model="selectedMonth" @change="fetchData"
+                            class="select select-bordered select-sm w-full lg:w-32">
+                            <option v-for="b in months" :key="b" :value="b">{{ b }}</option>
+                        </select>
 
-                    <button @click="downloadExcel" class="btn btn-success btn-sm">
-                        Excel
-                    </button>
+                        <!-- Baris 2 (mobile): Year -->
+                        <select v-model="selectedYear" @change="fetchData"
+                            class="select select-bordered select-sm w-full lg:w-24">
+                            <option v-for="y in availableYears" :key="y" :value="y">{{ y }}</option>
+                        </select>
+
+                        <!-- Baris 3 (mobile): Buttons -->
+                        <div class="flex gap-2 w-full lg:w-auto">
+                            <button @click="downloadPdf" class="btn btn-error btn-sm flex-1 lg:flex-none">
+                                PDF
+                            </button>
+
+                            <button @click="downloadExcel" class="btn btn-success btn-sm flex-1 lg:flex-none">
+                                Excel
+                            </button>
+                        </div>
+
+                    </div>
                 </div>
             </div>
 
