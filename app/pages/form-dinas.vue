@@ -7,7 +7,7 @@
       <!-- ===================== -->
       <!-- TABEL DATA -->
       <!-- ===================== -->
-      <div class="lg:col-span-9">
+      <div class="lg:col-span-9 order-2 lg:order-1">
 
         <div class="card bg-base-100 shadow-xl">
 
@@ -179,7 +179,7 @@
       <!-- ===================== -->
       <!-- FORM INPUT -->
       <!-- ===================== -->
-      <div class="lg:col-span-3">
+      <div class="lg:col-span-3 order-1 lg:order-2">
 
         <div class="card bg-base-100 shadow-xl">
 
