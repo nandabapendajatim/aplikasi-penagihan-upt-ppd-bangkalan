@@ -21,6 +21,9 @@
     <!-- Footer -->
     <Footer />
 
+    <!-- Chatbot -->
+    <!-- <ChatBot /> -->
+
   </div>
 
 </template>
@@ -29,6 +32,7 @@
 import Navbar from '~/components/Navbar.vue'
 import Sidebar from '~/components/Sidebar.vue'
 import Footer from '~/components/Footer.vue'
+import ChatBot from '~/components/ChatBot.vue'
 
 const sidebarOpen = ref(true)
 </script>
